@@ -132,7 +132,6 @@ static void write_rnd_mem_to_file(int fd, void* mem_ptr, size_t mem_size, size_t
     puts("Finished writing to file");
 }
 
-// TODO CV
 static void* aggregating_thread(void* arg) {
     struct aggregating_thread_state* cur_thread = (struct aggregating_thread_state*) arg;
     char read_chars[cur_thread->size];
