@@ -10,8 +10,6 @@
 #include "util.h"
 
 int main(){
-//    srand(time(NULL));
-
     wait_for_input("ALLOCATE MEM");
     void* mem_region = allocate_memory((void*) B, A * megabyte);
     wait_for_input("FILL MEM");
