@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
 
 #include "memory_ops.h"
 
@@ -60,10 +62,22 @@ static void* filling_thread(void *arg){
     int file_d = open(region->read_from, O_RDONLY);
     if (file_d == -1) {
         perror("Error on opening the file");
+        exit(errno);
     } else {
-        void* write_to = ((char*) region->ptr + region->offset);
-        size_t read_bytes = read(file_d, write_to, region->size);
-        printf("FILL %p with %lu bytes from %s\n", write_to, read_bytes, region->read_from);
+        void* write_to;
+        size_t read_bytes;
+        size_t successfully_read = 0;
+        while(successfully_read < region->size) {
+            write_to = ((char*) region->ptr + region->offset);
+            read_bytes = read(file_d, write_to, region->size - successfully_read);
+            if (read_bytes == -1) {
+                perror("Error on reading the file");
+                exit(errno);
+            } else {
+                successfully_read += read_bytes;
+                printf("FILLED %p with %lu bytes from %s (%lu remains)\n", write_to, read_bytes, region->read_from, region->size - successfully_read);
+            }
+        }
     }
     return NULL;
 }

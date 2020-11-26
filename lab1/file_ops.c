@@ -36,8 +36,7 @@ void write_rnd_mem_to_files(void* addr, size_t mem_size, size_t file_size_limit,
     int file_count = ceil_div(mem_size, file_size_limit);
 
     int i;
-    size_t memory_remains;
-    for (i = 0, memory_remains = mem_size; i < file_count; i++, memory_remains -= file_size_limit) {
+    for (i = 0; i < file_count; i++) {
         const char* new_file_name = generate_file_name(i + 1);
         int new_file = create_file(new_file_name);
         printf("Writing to %s\n", new_file_name);

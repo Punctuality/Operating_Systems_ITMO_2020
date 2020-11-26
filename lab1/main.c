@@ -13,7 +13,7 @@ int main(){
     wait_for_input("ALLOCATE MEM");
     void* mem_region = allocate_memory((void*) B, A * megabyte);
     wait_for_input("FILL MEM");
-    fill_the_memory(mem_region, A * megabyte, "/dev/urandom", D);
+    fill_the_memory(mem_region, A * megabyte, "/dev/random", D);
     wait_for_input("WRITE MEM TO FILES");
     write_rnd_mem_to_files(mem_region, A * megabyte, E * megabyte, G);
     wait_for_input("READ AND AGGREGATE FROM FILES");
