@@ -19,6 +19,5 @@ int main(){
     wait_for_input("READ AND AGGREGATE FROM FILES");
     long result = aggregate_value_from_files(A * megabyte, E * megabyte, I, LONG_MAX, &min);
     printf("RESULTED VALUE: %ld\n", result);
-
     puts("END");
 }
