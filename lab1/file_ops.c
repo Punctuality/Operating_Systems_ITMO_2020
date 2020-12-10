@@ -173,8 +173,10 @@ static const char* generate_file_name(int file_num) {
 
 static int create_file(const char* file_name) {
     int file = open(file_name, O_RDWR | O_CREAT, (mode_t) 0600);
+#ifdef POSIX_FADVISE
     posix_fadvise(file, 0, 0, POSIX_FADV_DONTNEED);
-
+    printf("Advised system to use NOCACHE with %s\n", file_name);
+#endif
     if (file == -1){
         perror("Error on creating the file");
         exit(errno);
