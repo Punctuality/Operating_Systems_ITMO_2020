@@ -3,6 +3,8 @@
 //
 #include <stdio.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "memory_ops.h"
 #include "file_ops.h"
@@ -10,6 +12,10 @@
 #include "util.h"
 
 int main(){
+#ifndef DEBUG
+    srand(time(NULL));
+#endif
+
     wait_for_input("ALLOCATE MEM");
     void* mem_region = allocate_memory((void*) B, A * megabyte);
     wait_for_input("FILL MEM");

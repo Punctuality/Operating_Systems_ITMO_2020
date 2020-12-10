@@ -12,6 +12,7 @@
 #include "file_ops.h"
 
 #define ceil(a, b) ((a % b) != 0 ? a / b + 1 : a / b)
+#define rnd_offset(upper_bound) ((size_t) random() % upper_bound)
 
 struct aggregating_thread_state{
     int fd;
@@ -39,10 +40,6 @@ void write_rnd_mem_to_files(void* addr, size_t mem_size, size_t file_size_limit,
         write_rnd_mem_to_file(new_file, addr, mem_size, block_size, file_size_limit);
         close(new_file);
     }
-}
-
-static size_t gen_rnd_offset(long upper_bound) {
-    return (size_t) random() * upper_bound / RAND_MAX;
 }
 
 long aggregate_value_from_files(size_t mem_size, size_t file_size, int thread_count, long fold_start, long(*agg_func)(long, long)) {
@@ -111,7 +108,7 @@ static void write_rnd_mem_to_file(int fd, void* mem_ptr, size_t mem_size, size_t
     long long remains = file_size;
     puts("Started writing to file");
     while (remains > 0) {
-        size_t rnd_offset = gen_rnd_offset(mem_size - block_size - 1);
+        size_t rnd_offset = rnd_offset(mem_size - block_size - 1);
         void* rnd_ptr = (char*) mem_ptr + rnd_offset;
 
         if (iter % 100000 == 0) {
