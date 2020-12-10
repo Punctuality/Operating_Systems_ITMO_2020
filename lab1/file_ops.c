@@ -11,6 +11,8 @@
 
 #include "file_ops.h"
 
+#define ceil(a, b) ((a % b) != 0 ? a / b + 1 : a / b)
+
 struct aggregating_thread_state{
     int fd;
     pthread_cond_t* file_cv;
@@ -26,14 +28,8 @@ static int create_file(const char* file_name);
 static void write_rnd_mem_to_file(int fd, void* mem_ptr, size_t mem_size, size_t block_size, size_t file_size);
 static void* aggregating_thread(void* arg);
 
-int ceil_div(long a, long b) {
-    double div = (double) a / (double) b;
-    int floored_div = (int) div;
-    return floored_div < div ? floored_div + 1 : floored_div;
-}
-
 void write_rnd_mem_to_files(void* addr, size_t mem_size, size_t file_size_limit, size_t block_size) {
-    int file_count = ceil_div(mem_size, file_size_limit);
+    int file_count = ceil(mem_size, file_size_limit);
 
     int i;
     for (i = 0; i < file_count; i++) {
@@ -50,7 +46,7 @@ static size_t gen_rnd_offset(long upper_bound) {
 }
 
 long aggregate_value_from_files(size_t mem_size, size_t file_size, int thread_count, long fold_start, long(*agg_func)(long, long)) {
-    int file_count = ceil_div(mem_size, file_size);
+    int file_count = ceil(mem_size, file_size);
 
     int threads_per_file = thread_count / file_count;
     long size_per_thread = (long long) file_size / threads_per_file;
