@@ -49,15 +49,15 @@ long aggregate_value_from_files(size_t mem_size, size_t file_size, int thread_co
     long size_per_thread = (long long) file_size / threads_per_file;
     long remainder_size =  (long long) file_size % threads_per_file;
 
-    pthread_t* thread_ids = malloc(sizeof(pthread_t) * thread_count);
-    struct aggregating_thread_state* threads = malloc(sizeof(struct aggregating_thread_state) * thread_count);
-    long* results = malloc(sizeof(long) * thread_count);
+    pthread_t thread_ids[thread_count];
+    struct aggregating_thread_state threads[thread_count];
+    long results[thread_count];
 
     int file_iter, thread_iter;
     int files[file_count];
+    pthread_cond_t files_cv[file_count];
+    pthread_mutex_t files_mutex[file_count];
 
-    pthread_cond_t* files_cv = malloc(sizeof(pthread_cond_t) * file_count);
-    pthread_mutex_t* files_mutex = malloc(sizeof(pthread_mutex_t) * file_count);
     for (file_iter = 0; file_iter < file_count; file_iter++) {
         const char* file_name = generate_file_name(file_iter+1);
         files[file_iter] = create_file(file_name);
@@ -89,16 +89,9 @@ long aggregate_value_from_files(size_t mem_size, size_t file_size, int thread_co
 
     long global_fold_val = fold_start;
     for(thread_iter = 0; thread_iter < thread_count; thread_iter++){
-        void* tmp;
-        pthread_join(thread_ids[thread_iter], &(tmp));
+        pthread_join(thread_ids[thread_iter], NULL);
         global_fold_val = agg_func(global_fold_val, *(results + thread_iter));
     }
-
-    free(thread_ids);
-    free(threads);
-    free(results);
-    free(files_cv);
-    free(files_mutex);
 
     return global_fold_val;
 }
@@ -118,7 +111,7 @@ static void write_rnd_mem_to_file(int fd, void* mem_ptr, size_t mem_size, size_t
 
         write(fd, rnd_ptr, block_size);
 
-        remains -= block_size;
+        remains -= (long long) block_size;
         iter++;
     }
     puts("Finished writing to file");
@@ -154,7 +147,7 @@ static void* aggregating_thread(void* arg) {
     printf("Thread computed aggregated value: %ld\n", local_fold_val);
 
     *cur_thread->thread_result = local_fold_val;
-    return NULL;
+    return 0;
 }
 
 static const char* generate_file_name(int file_num) {

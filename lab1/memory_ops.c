@@ -5,7 +5,6 @@
 #include <sys/mman.h>
 #include <pthread.h>
 #include <stdio.h>
-#include <malloc.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -27,8 +26,8 @@ void* allocate_memory(void* addr, size_t size) {
 }
 
 void fill_the_memory(void* addr, size_t size, const char* read_from, int thread_count) {
-    pthread_t* thread_ids = malloc(sizeof(pthread_t) * thread_count);
-    struct to_fill_region* regions = malloc(sizeof(struct to_fill_region) * thread_count);
+    pthread_t thread_ids[thread_count];
+    struct to_fill_region regions[thread_count];
 
     size_t size_per_thread = size / thread_count;
     size_t memory_remains = size;
@@ -52,9 +51,6 @@ void fill_the_memory(void* addr, size_t size, const char* read_from, int thread_
     for (i = 0; i < thread_count; i++) {
         pthread_join(*(thread_ids + i), NULL);
     }
-
-    free(thread_ids);
-    free(regions);
 }
 
 static void* filling_thread(void *arg){
@@ -79,5 +75,5 @@ static void* filling_thread(void *arg){
             }
         }
     }
-    return NULL;
+    return 0;
 }
