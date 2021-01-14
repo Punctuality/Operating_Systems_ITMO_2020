@@ -17,17 +17,17 @@ boot:
 
 	jmp $
 
-%include "print_string.asm"
-%include "print_string_pm.asm"
-%include "disk_load.asm"
-%include "gdt.asm"
-%include "switch_to_32.asm"
+%include "boot/print_string.asm"
+%include "boot/print_string_pm.asm"
+%include "boot/disk_load.asm"
+%include "boot/gdt.asm"
+%include "boot/switch_to_32.asm"
 
 bits 16
 
 load_kernel:
 	mov bx, KERNEL_OFFSET ; destination
-	mov dh, 2 ; 2 sectors of drive
+	mov dh, 32 ; 2 sectors of drive
 	mov dl, [BOOT_DRIVE]
 	call disk_load
 

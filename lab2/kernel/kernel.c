@@ -1,50 +1,12 @@
 #define SCREEN_SIZE 25*80*2
 #define VIDEO_MEM 0xB8000
+#define MAX_COLS 80
+#define MAX_ROWS 25
 #define PIC_1_CTRL 0x20
 #define PIC_2_CTRL 0xA0
 #define PIC_1_DATA 0x21
 #define PIC_2_DATA 0xA1
 #define IDT_SIZE 256
-
-unsigned char keyboard_map[128] =
-        {
-                0,  27, '1', '2', '3', '4', '5', '6', '7', '8',     /* 9 */
-                '9', '0', '-', '=', '\b',     /* Backspace */
-                '\t',                 /* Tab */
-                'q', 'w', 'e', 'r',   /* 19 */
-                't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', /* Enter key */
-                0,                  /* 29   - Control */
-                'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',     /* 39 */
-                '\'', '`',   0,                /* Left shift */
-                '\\', 'z', 'x', 'c', 'v', 'b', 'n',                    /* 49 */
-                'm', ',', '.', '/',   0,                              /* Right shift */
-                '*',
-                0,  /* Alt */
-                ' ',  /* Space bar */
-                0,  /* Caps lock */
-                0,  /* 59 - F1 key ... > */
-                0,   0,   0,   0,   0,   0,   0,   0,
-                0,  /* < ... F10 */
-                0,  /* 69 - Num lock*/
-                0,  /* Scroll Lock */
-                0,  /* Home key */
-                0,  /* Up Arrow */
-                0,  /* Page Up */
-                '-',
-                0,  /* Left Arrow */
-                0,
-                0,  /* Right Arrow */
-                '+',
-                0,  /* 79 - End key*/
-                0,  /* Down Arrow */
-                0,  /* Page Down */
-                0,  /* Insert Key */
-                0,  /* Delete Key */
-                0,   0,   0,
-                0,  /* F11 Key */
-                0,  /* F12 Key */
-                0,  /* All other keys are undefined */
-        };
 
 struct idt_pointer
 {
@@ -72,7 +34,7 @@ static void initialize_idt_pointer()
     idt_ptr.base = (unsigned int)idt_table;
 }
 
-extern unsigned char read_port (int port);
+extern unsigned char read_port(int port);
 extern void write_port(unsigned short port, unsigned char data);
 extern void load_idt(void*);
 extern void keyboard_handler_int();
@@ -122,13 +84,31 @@ void clear_screen(void){
     }
 }
 
+void print_newline(void){
+    unsigned int line_size = 2 * MAX_COLS;
+    current_loc += (line_size - current_loc % (line_size));
+}
+
 void print(const char *str){
     char *vidptr = VIDEO_MEM;
     unsigned int i = 0;
     while (str[i] != '\0') {
-        vidptr[current_loc++] = str[i++];
-        vidptr[current_loc++] = 0x07;
+        if (str[i] == '\n') {
+            print_newline();
+        } else {
+            vidptr[current_loc++] = str[i];
+            vidptr[current_loc++] = 0x07;
+        }
+        i++;
     }
+}
+
+void print_hex(unsigned char hex_val) {
+    char hex[3];
+    hex[1] = (char) (hex_val % 16) + 48;
+    hex[0] = (char) ((hex_val >> 4) % 16) + 48;
+    hex[2] = '\0';
+    print(hex);
 }
 
 void test_print(void) {
@@ -136,21 +116,29 @@ void test_print(void) {
     print(echo);
 }
 
+#include "../drivers/keyboard_map.h"
+
 void keyboard_handler(void)
 {
     const char *echo = "echo> ";
     signed char keycode;
     char *vidptr = VIDEO_MEM;
+    // TODO check the mask
     keycode = read_port(0x60);
     /* Only print characters on keydown event that have
      * a non-zero mapping */
     if (keyboard_map[keycode] == '\n') {
-//        print_newline();
+        print_newline();
         print(echo);
-    } else if(keycode >= 0 && keyboard_map[keycode]) {
+    } else if(keycode >= 0) {
+        print("NEW HEX: ");
+        print_hex(keycode);
+        print(" ");
         vidptr[current_loc++] = keyboard_map[keycode];
         /* Attribute 0x07 is white on black characters */
         vidptr[current_loc++] = 0x07;
+
+        print_newline();
     }
 
     /* Send End of Interrupt (EOI) to master PIC */
@@ -179,9 +167,49 @@ void idt_init()
 }
 
 
+void fill_map(){
+    unsigned char tmp[128] = {
+            0,  27, '1', '2', '3', '4', '5', '6', '7', '8',     /* 9 */
+            '9', '0', '-', '=', '\b',     /* Backspace */
+            '\t',                 /* Tab */
+            'q', 'w', 'e', 'r',   /* 19 */
+            't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', /* Enter key */
+            0,                  /* 29   - Control */
+            'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',     /* 39 */
+            '\'', '`',   0,                /* Left shift */
+            '\\', 'z', 'x', 'c', 'v', 'b', 'n',                    /* 49 */
+            'm', ',', '.', '/',   0,                              /* Right shift */
+            '*',
+            0,  /* Alt */
+            ' ',  /* Space bar */
+            0,  /* Caps lock */
+            0,  /* 59 - F1 key ... > */
+            0,   0,   0,   0,   0,   0,   0,   0,
+            0,  /* < ... F10 */
+            0,  /* 69 - Num lock*/
+            0,  /* Scroll Lock */
+            0,  /* Home key */
+            0,  /* Up Arrow */
+            0,  /* Page Up */
+            '-',
+            0,  /* Left Arrow */
+            0,
+            0,  /* Right Arrow */
+            '+',
+            0,  /* 79 - End key*/
+            0,  /* Down Arrow */
+            0,  /* Page Down */
+            0,  /* Insert Key */
+            0,  /* Delete Key */
+            0,   0,   0,
+            0,  /* F11 Key */
+            0,  /* F12 Key */
+            0,  /* All other keys are undefined */
+    };
+    for (int i = 0; i < 128; i++) keyboard_map[i] = tmp[i];
+}
+
 void kernel_c() {
-    keyboard_map[2] = '1';
-    keyboard_map[3] = 'a';
     vidptr = VIDEO_MEM;
     current_loc = 0;
     const char *echo = "echo> ";
@@ -192,6 +220,16 @@ void kernel_c() {
     load_idt_entry(0x21, (unsigned long) keyboard_handler_int, 0x08, 0x8e);
     kb_init();
     clear_screen();
-    print(echo);
+
+    print("KEYMAP_TABLE:\n");
+    unsigned char cur[1];
+    for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 8; j++) {
+            print_hex(keyboard_map[i*8 + j]);
+            print(" ");
+        }
+        print_newline();
+    }
+
     while(1) __asm__("hlt\n\t");
 }
