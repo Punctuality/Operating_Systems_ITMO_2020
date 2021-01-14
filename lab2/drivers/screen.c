@@ -12,7 +12,7 @@ void clear_screen(void){
     unsigned int i = 0;
     while (i < SCREEN_SIZE) {
         vidptr[i++] = 0;
-        vidptr[i++] = 0;
+        vidptr[i++] = DEFAULT_TEXT_COLOR;
     }
 }
 
