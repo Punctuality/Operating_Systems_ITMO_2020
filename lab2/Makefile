@@ -25,6 +25,8 @@ target/kernel_entry.o: boot/kernel_entry.asm
 target/bootstrap.bin: boot/bootstrap.asm
 	$(ASM) $< -f bin -o $@
 
+boot_targets: target/kernel_entry.o
+
 # Drivers
 
 target/screen.o: drivers/screen.c
@@ -39,6 +41,8 @@ target/keyboard.o: drivers/keyboard.c
 target/io_functions.o: drivers/io_functions.asm
 	$(ASM) $< -f elf32 -o $@
 
+driver_targets: target/screen.o target/idt.o target/keyboard.o target/io_functions.o
+
 # Kernel
 
 target/util.o: kernel/util.c
@@ -49,6 +53,8 @@ target/shell.o: kernel/shell.c
 
 target/kernel.o: kernel/kernel.c
 	$(CC) -fno-pie -m32 -ffreestanding -c $< -o $@
+
+kernel_targets: target/util.o target/shell.o target/kernel.o
 
 # Finalize
 

@@ -44,9 +44,19 @@ void print(const char *str, char color){
     }
 }
 
+static char to_ascii_char(char c) {
+    if (c >= 0xA && c <= 0xF) {
+        return c + 0x37;
+    } else if (c >= 0x0 && c <= 0x9){
+        return c + 0x30;
+    } else {
+        return '$';
+    }
+}
+
 void print_hex(unsigned char hex_val, char color) {
-    print_char((char) ((hex_val >> 4) % 16) + 48, color);
-    print_char((char) (hex_val % 16) + 48, color);
+    print_char(to_ascii_char((char) ((hex_val >> 4) % 16)) , color);
+    print_char(to_ascii_char((char) (hex_val % 16)), color);
 }
 
 void backspace(int times) {
