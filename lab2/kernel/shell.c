@@ -205,6 +205,6 @@ void receive_char(char new_char) {
             }
             break;
         }
-
     }
+    set_cursor(current_loc);
 }

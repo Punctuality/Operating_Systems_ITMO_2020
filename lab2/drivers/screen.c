@@ -64,3 +64,13 @@ void backspace(int times) {
         vidptr[current_loc--] = 0;
     }
 }
+
+void set_cursor(int offset) {
+    offset /= 2; // Covert from cell offset to char offset.
+    // This is similar to get_cursor, only now we write
+    // bytes to those internal device registers.
+    write_port(REG_SCREEN_CTRL, 14);
+    write_port(REG_SCREEN_DATA, (unsigned char)(offset >> 8));
+    write_port(REG_SCREEN_CTRL, 15);
+    write_port(REG_SCREEN_DATA, offset);
+}

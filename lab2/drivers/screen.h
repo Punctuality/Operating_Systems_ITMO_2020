@@ -5,6 +5,9 @@
 #ifndef OPERATING_SYSTEMS_ITMO_2020_SCREEN_H
 #define OPERATING_SYSTEMS_ITMO_2020_SCREEN_H
 
+#define REG_SCREEN_CTRL 0x3D4
+#define REG_SCREEN_DATA 0x3D5
+
 #define VIDEO_ADDRESS (char*) 0xB8000
 #define MAX_COLS 80
 #define MAX_ROWS 25
@@ -27,5 +30,7 @@ void print(const char *str, char color);
 void print_hex(unsigned char hex_val, char color);
 void print_char(char val, char color);
 void backspace(int times);
+
+void set_cursor(int offset);
 
 #endif //OPERATING_SYSTEMS_ITMO_2020_SCREEN_H

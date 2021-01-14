@@ -4,6 +4,8 @@ LD = ld
 
 # Custom
 
+deploy-image: recompile clean-object-files
+
 run: all target/os-image
 	qemu-system-x86_64 -fda target/os-image
 
@@ -16,6 +18,10 @@ prep: clean boot/ kernel/ drivers/
 
 clean:
 	rm -rf target/
+
+clean-object-files:
+	rm target/*.o
+	rm target/*.bin
 
 # Boot
 
