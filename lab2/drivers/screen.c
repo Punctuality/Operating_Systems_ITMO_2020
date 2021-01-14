@@ -10,8 +10,8 @@ unsigned int current_loc;
 void clear_screen(void){
     unsigned int i = 0;
     while (i < SCREEN_SIZE) {
-        vidptr[i++] = ' ';
-        vidptr[i++] = DEFAULT_COLOR;
+        vidptr[i++] = 0;
+        vidptr[i++] = 0;
     }
 }
 
@@ -20,25 +20,31 @@ void print_newline(void){
     current_loc += (line_size - current_loc % (line_size));
 }
 
-void print(const char *str){
+void print(const char *str, char color){
     unsigned int i = 0;
     while (str[i] != '\0') {
         if (str[i] == '\n') {
             print_newline();
         } else {
             vidptr[current_loc++] = str[i];
-            vidptr[current_loc++] = DEFAULT_COLOR;
+            vidptr[current_loc++] = color;
         }
         i++;
     }
 }
 
-void print_char(char val) {
+void print_char(char val, char color) {
     vidptr[current_loc++] = val;
-    vidptr[current_loc++] = DEFAULT_COLOR;
+    vidptr[current_loc++] = color;
 }
 
-void print_hex(unsigned char hex_val) {
-    print_char((char) ((hex_val >> 4) % 16) + 48);
-    print_char((char) (hex_val % 16) + 48);
+void print_hex(unsigned char hex_val, char color) {
+    print_char((char) ((hex_val >> 4) % 16) + 48, color);
+    print_char((char) (hex_val % 16) + 48, color);
+}
+
+void backspace(int times) {
+    for (int i = 0; i < BYTES_PER_CHAR * times; i++) {
+        vidptr[current_loc--] = 0;
+    }
 }

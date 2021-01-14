@@ -1,6 +1,6 @@
 #include "../drivers/keyboard.h"
-#include "../drivers/screen.h"
 #include "../drivers/idt.h"
+#include "shell.h"
 
 extern void keyboard_handler_int();
 
@@ -11,7 +11,7 @@ void initialize(){
     idt_init();
     load_idt_entry(0x21, (unsigned long) keyboard_handler_int, 0x08, 0x8e);
     kb_init();
-    clear_screen();
+    shell_init();
 }
 
 void kmain() {

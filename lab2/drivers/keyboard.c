@@ -2,34 +2,47 @@
 // Created by sdfedorov on 14/01/2021.
 //
 
-#include "screen.h"
+#include "../kernel/shell.h"
 #include "keyboard.h"
 #include "keyboard_map.h"
 
 extern unsigned char read_port(int port);
 extern void write_port(unsigned short port, unsigned char data);
 
-void keyboard_handler(void)
-{
-    const char *echo = "echo> ";
+//void keyboard_handler(void)
+//{
+//    const char *echo = "echo> ";
+//    signed char keycode;
+//    keycode = read_port(0x60);
+//    /* Only print characters on keydown event that have
+//     * a non-zero mapping */
+//    if (keyboard_map[keycode] == '\n') {
+//        print_newline();
+//        print(echo);
+//    } else if(keycode >= 0) {
+//        print("NEW HEX: ");
+//        print_hex(keycode);
+//        print(" ");
+//        vidptr[current_loc++] = keyboard_map[keycode];
+//        /* Attribute 0x07 is white on black characters */
+//        vidptr[current_loc++] = 0x07;
+//
+//        print_newline();
+//    }
+//
+//    /* Send End of Interrupt (EOI) to master PIC */
+//    write_port(0x20, 0x20);
+//}
+
+void keyboard_handler(void) {
     signed char keycode;
-    keycode = read_port(0x60);
-    /* Only print characters on keydown event that have
-     * a non-zero mapping */
-    if (keyboard_map[keycode] == '\n') {
-        print_newline();
-        print(echo);
-    } else if(keycode >= 0) {
-        print("NEW HEX: ");
-        print_hex(keycode);
-        print(" ");
-        vidptr[current_loc++] = keyboard_map[keycode];
-        /* Attribute 0x07 is white on black characters */
-        vidptr[current_loc++] = 0x07;
 
-        print_newline();
+    if (read_port(0x64) & 0x01) {
+        keycode = read_port(0x60);
+        if (keycode >= 0) {
+            receive_char(keyboard_map[keycode]);
+        }
     }
-
     /* Send End of Interrupt (EOI) to master PIC */
     write_port(0x20, 0x20);
 }
