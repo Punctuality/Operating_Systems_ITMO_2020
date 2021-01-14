@@ -3,6 +3,7 @@
 //
 
 #include "screen.h"
+#include "../kernel/util.h"
 
 char* vidptr = VIDEO_ADDRESS;
 unsigned int current_loc;
@@ -16,8 +17,19 @@ void clear_screen(void){
 }
 
 void print_newline(void){
-    unsigned int line_size = 2 * MAX_COLS;
+    unsigned int line_size = BYTES_PER_CHAR * MAX_COLS;
     current_loc += (line_size - current_loc % (line_size));
+
+    if (current_loc / (BYTES_PER_CHAR * MAX_COLS) >= MAX_ROWS) {
+        // Shifting
+        mem_cpy(vidptr, vidptr + BYTES_PER_CHAR * MAX_COLS,SCREEN_SIZE);
+        current_loc -= BYTES_PER_CHAR * MAX_COLS;
+    }
+}
+
+void print_char(char val, char color) {
+    vidptr[current_loc++] = val;
+    vidptr[current_loc++] = color;
 }
 
 void print(const char *str, char color){
@@ -26,16 +38,10 @@ void print(const char *str, char color){
         if (str[i] == '\n') {
             print_newline();
         } else {
-            vidptr[current_loc++] = str[i];
-            vidptr[current_loc++] = color;
+            print_char(str[i], color);
         }
         i++;
     }
-}
-
-void print_char(char val, char color) {
-    vidptr[current_loc++] = val;
-    vidptr[current_loc++] = color;
 }
 
 void print_hex(unsigned char hex_val, char color) {

@@ -6,16 +6,15 @@
 #include "../drivers/screen.h"
 
 #define MSG_LEN 9
+#define MAX_LEN MAX_COLS - MSG_LEN
 
 static char cli_msg[MSG_LEN] = "~console>";
-static char cur_row[MAX_COLS];
+static char cur_row[MAX_LEN];
 static int cur_row_pos;
 static char* result;
 
 static void flush_the_row() {
-    for (int i = 0; i < MAX_COLS; i++) {
-        cur_row[i] = 0;
-    }
+    for (int i = 0; i < MAX_LEN; i++) cur_row[i] = 0;
     cur_row_pos = 0;
 }
 
@@ -51,10 +50,12 @@ void receive_char(char new_char) {
             break;
         }
         default: {
-            cur_row[cur_row_pos++] = new_char;
+            if (cur_row_pos < MAX_LEN){
+                cur_row[cur_row_pos++] = new_char;
 //            print_hex(new_char);
 //            print_char(' ');
-            print_char_d(new_char);
+                print_char_d(new_char);
+            }
             break;
         }
 
