@@ -1,14 +1,11 @@
-#define SCREEN_SIZE 25*80*2
-#define VIDEO_MEM 0xB8000
-#define MAX_COLS 80
-#define MAX_ROWS 25
+#include "../drivers/keyboard_map.h"
+#include "../drivers/screen.h"
+
 #define PIC_1_CTRL 0x20
 #define PIC_2_CTRL 0xA0
 #define PIC_1_DATA 0x21
 #define PIC_2_DATA 0xA1
 #define IDT_SIZE 256
-
-#include "../drivers/keyboard_map.h"
 
 struct idt_pointer
 {
@@ -25,10 +22,8 @@ struct idt_entry
     unsigned short int offset_higherbits;
 } __attribute__((packed));
 
-char *vidptr = VIDEO_MEM;
 struct idt_entry idt_table[IDT_SIZE];
 struct idt_pointer idt_ptr;
-unsigned int current_loc;
 
 static void initialize_idt_pointer()
 {
@@ -78,51 +73,10 @@ static void initialize_pic()
     write_port(0xA1 , 0xff);
 }
 
-void clear_screen(void){
-    unsigned int i = 0;
-    while (i < SCREEN_SIZE) {
-        vidptr[i++] = ' ';
-        vidptr[i++] = 0x07;
-    }
-}
-
-void print_newline(void){
-    unsigned int line_size = 2 * MAX_COLS;
-    current_loc += (line_size - current_loc % (line_size));
-}
-
-void print(const char *str){
-    char *vidptr = VIDEO_MEM;
-    unsigned int i = 0;
-    while (str[i] != '\0') {
-        if (str[i] == '\n') {
-            print_newline();
-        } else {
-            vidptr[current_loc++] = str[i];
-            vidptr[current_loc++] = 0x07;
-        }
-        i++;
-    }
-}
-
-void print_hex(unsigned char hex_val) {
-    char hex[3];
-    hex[1] = (char) (hex_val % 16) + 48;
-    hex[0] = (char) ((hex_val >> 4) % 16) + 48;
-    hex[2] = '\0';
-    print(hex);
-}
-
-void test_print(void) {
-    const char *echo = "tetasts> ";
-    print(echo);
-}
-
 void keyboard_handler(void)
 {
     const char *echo = "echo> ";
     signed char keycode;
-    char *vidptr = VIDEO_MEM;
     keycode = read_port(0x60);
     /* Only print characters on keydown event that have
      * a non-zero mapping */
@@ -166,7 +120,7 @@ void idt_init()
 }
 
 void kmain() {
-    vidptr = VIDEO_MEM;
+    vidptr = VIDEO_ADDRESS;
     current_loc = 0;
     for (int i = 0; i < IDT_SIZE; i++) {
         load_idt_entry(i, 0, 0, 0);
@@ -177,7 +131,6 @@ void kmain() {
     clear_screen();
 
     print("KEYMAP_TABLE:\n");
-    unsigned char cur[1];
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 8; j++) {
             print_hex(keyboard_map[i*8 + j]);
