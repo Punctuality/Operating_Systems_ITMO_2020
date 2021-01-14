@@ -33,10 +33,12 @@ void print(const char *str){
     }
 }
 
+void print_char(char val) {
+    vidptr[current_loc++] = val;
+    vidptr[current_loc++] = DEFAULT_COLOR;
+}
+
 void print_hex(unsigned char hex_val) {
-    char hex[3];
-    hex[1] = (char) (hex_val % 16) + 48;
-    hex[0] = (char) ((hex_val >> 4) % 16) + 48;
-    hex[2] = '\0';
-    print(hex);
+    print_char((char) ((hex_val >> 4) % 16) + 48);
+    print_char((char) (hex_val % 16) + 48);
 }

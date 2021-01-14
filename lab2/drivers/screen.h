@@ -19,5 +19,6 @@ void clear_screen(void);
 void print_newline(void);
 void print(const char *str);
 void print_hex(unsigned char hex_val);
+void print_char(char val);
 
 #endif //OPERATING_SYSTEMS_ITMO_2020_SCREEN_H
