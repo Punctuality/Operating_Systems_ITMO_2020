@@ -180,6 +180,7 @@ void shell_init() {
     clear_screen();
     flush_the_row();
     print(cli_msg, DEFAULT_MSG_COLOR);
+    set_cursor(current_loc);
 }
 
 void receive_char(char new_char) {
@@ -189,10 +190,12 @@ void receive_char(char new_char) {
             flush_the_row();
             print_newline();
             print(cli_msg, DEFAULT_MSG_COLOR);
+            set_cursor(current_loc);
             break;
         };
         case 0x08: {
             if (cur_row_pos > 0) {
+                set_cursor(current_loc);
                 backspace(1);
                 cur_row[cur_row_pos--] = 0;
             }
@@ -202,9 +205,9 @@ void receive_char(char new_char) {
             if (cur_row_pos < MAX_LEN){
                 cur_row[cur_row_pos++] = new_char;
                 print_char_d(new_char);
+                set_cursor(current_loc);
             }
             break;
         }
     }
-    set_cursor(current_loc);
 }
