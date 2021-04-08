@@ -5,6 +5,8 @@
 #include "screen.h"
 #include "../kernel/util.h"
 
+extern void write_port(unsigned short port, unsigned char data);
+
 char* vidptr = VIDEO_ADDRESS;
 unsigned int current_loc;
 
